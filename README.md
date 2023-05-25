@@ -1,6 +1,6 @@
 # Fairly
 
-### Fairly is a SaaS platform enabling talent acquisition teams to quickly find and hire high quality diverse talent. This product is an MVP and due to the proprietary nature of the code I can only provide code snippets of my code.
+### Fairly is a SaaS platform enabling talent acquisition teams to quickly find and hire high quality diverse talent. This product is an MVP and due to the proprietary nature of the code, I can only provide code snippets of my work.
 My role as a software engineer on this project was to handle the compensation package feature on the application. I handled all of the code on my task from the back-end to the front-end. Below is a list of actions I took to accomplish my responsibilities
 
 • Created a fully responsive dashboard that enables compensation packages to be added and managed by hiring admins and organization admins.
