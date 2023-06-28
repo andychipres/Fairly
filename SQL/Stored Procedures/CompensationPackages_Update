@@ -1,0 +1,69 @@
+USE [Fairly]
+GO
+/****** Object:  StoredProcedure [dbo].[CompensationPackages_Update]    Script Date: 6/27/2023 9:52:00 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- =============================================
+-- Author: <ANDY CHIPRES>
+-- Create date: <04/10/2023>
+-- Description: <Update a compensation package>
+
+-- MODIFIED BY: author
+-- MODIFIED DATE:
+-- Code Reviewer: BRIAN B.
+-- Note:
+-- =============================================
+
+ALTER proc [dbo].[CompensationPackages_Update]
+	@OrgId  int,
+	@Name nvarchar(100),
+	@Description nvarchar(500),
+	@CreatedBy int,
+	@ModifiedBy int,
+	@CompPackageId int OUTPUT
+as
+
+/* ----- Test Code -----
+	
+	Declare @CompPackageId int = 11,
+
+	@OrgId int = 1,
+	@Name nvarchar(100) = 'Junior Developer Package',
+	@Description nvarchar(500) = '401k, $85k base salart',
+	@CreatedBy int = 3,
+	@ModifiedBy int = 7
+	
+	Execute [dbo].[CompensationPackages_Update] 
+
+	@OrgId,
+	@Name,
+	@Description,
+	@CreatedBy,
+	@ModifiedBy,
+	@CompPackageId OUTPUT
+	
+
+	Select * 
+	from dbo.CompensationPackages
+	Where Id = @CompPackageId	
+
+*/
+
+BEGIN
+
+	UPDATE [dbo].[CompensationPackages]
+	SET
+
+	[OrgId] = @OrgId,
+	[Name] = @Name,
+	[Description] = @Description,
+	[CreatedBy] = @CreatedBy,
+	[ModifiedBy] = @ModifiedBy
+
+	Where [Id] = @CompPackageId
+	 
+
+END
