@@ -1,0 +1,57 @@
+USE [Fairly]
+GO
+/****** Object:  StoredProcedure [dbo].[CompensationPackages_SelectAll]    Script Date: 6/27/2023 9:49:26 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+
+
+-- =============================================
+-- Author: <ANDY CHIPRES>
+-- Create date: <04/10/2023>
+-- Description: <Select a compensation package by Id>
+
+-- MODIFIED BY: author
+-- MODIFIED DATE:
+-- Code Reviewer: BRIAN B.
+-- Note: 
+-- =============================================
+
+ALTER proc [dbo].[CompensationPackages_SelectAll]
+	
+
+	as
+
+/* ----- Test Code -----
+	
+	Execute [dbo].[CompensationPackages_SelectAll]
+
+*/
+
+BEGIN
+
+	 SELECT
+
+	 mt.[Id],
+	 mt.[Name] as CompPackageName,
+	 mt.[Description],
+	 
+	 mt.[OrgId],
+
+	 o.[Name] as OrgName,
+	 mt.[CreatedBy],
+	 mt.[ModifiedBy],
+	 mt.[IsDeleted],
+	 mt.[DateCreated],
+	 mt.[DateModified]
+	 
+	 from [dbo].[CompensationPackages] as mt
+	 INNER JOIN Users c ON mt.CreatedBy = c.Id
+	 INNER JOIN Users m ON mt.ModifiedBy = m.Id 
+	 INNER JOIN Organizations o on o.Id = mt.OrgId 
+
+
+
+END
