@@ -34,7 +34,6 @@ namespace Web.Api.Controllers
             _authService = authService;
         }
 
-        
         [HttpGet("")]
         public ActionResult <ItemsResponse<Address>> GetAll() 
         {
