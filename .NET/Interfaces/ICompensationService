@@ -1,0 +1,43 @@
+using Models;
+using Models.Domain.Compensations;
+using Models.Requests.Compensations;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Services.Interfaces
+{
+    public interface ICompensationService
+    {
+        int AddElement(CompensationElementAddRequest request, int currentUserId);
+
+        CompensationElement SelectByElementId(int id);
+
+        CompensationElement SelectByCompPackageId(int compPackageId);
+
+        void UpdateElement(CompensationElementUpdateRequest updateRequest, int currentUserId);
+
+        void DeleteElement(int id);
+
+        int AddPackage(CompensationPackageAddRequest request, int userId);
+
+        CompensationPackage SelectByPackageId(int id);
+
+        void UpdatePackage(CompensationPackageUpdateRequest updateRequest, int currentUserId);
+
+        Paged<CompensationPackage> SelectByOrgIdPaged(int pageIndex, int pageSize, int orgId);
+
+        void SoftDelete(int id);
+
+        void DeletePackage(int id);
+
+        void AddJobCompensation(JobCompensationAddRequest request, int currentUserId);
+        void UpdateJobCompensation(JobCompensationUpdateRequest request, int jobId, int compId, int userId);
+        List<JobCompensation> SelectByJobId(int JobId);
+        JobCompensation SelectByJobandCompId(int JobId, int CompId);
+        void JobsCompensationDelete(int JobId, int CompId);
+
+    }
+}
