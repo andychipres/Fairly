@@ -1,0 +1,160 @@
+using Data;
+using Data.Providers;
+using Models.Domain.Addresses;
+using Models.Domain.Users;
+using Models.Requests.Addresses;
+using Models.Requests.Users;
+using Services.Interfaces;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Services
+{
+    public class UserServiceV1 : IUserServiceV1
+    {
+        IDataProvider _data = null;
+
+        public UserServiceV1(IDataProvider data)
+        {
+            _data = data;
+        }
+
+        public int Add(UserAddRequest request, int currentUserId)
+        {
+            int id = 0;
+
+            string procName = "[dbo].[Users_Insert]";
+            _data.ExecuteNonQuery(procName,
+                inputParamMapper: delegate (SqlParameterCollection col)
+                {
+                    AddCommonParams(request, col);
+
+                    SqlParameter idOut = new SqlParameter("@Id", SqlDbType.Int);
+                    idOut.Direction = ParameterDirection.Output;
+
+                    col.Add(idOut);
+
+                },
+                returnParameters: delegate (SqlParameterCollection returnCollection)
+                {
+                    object oId = returnCollection["@Id"].Value;
+
+                    int.TryParse(oId.ToString(), out id);
+
+                    Console.WriteLine("");
+                });
+
+            return id;
+        }
+
+        public User Get(int id)
+        {
+            User user = null;
+
+            string procName = "[dbo].[Users_SelectById]";
+
+
+            _data.ExecuteCmd(procName, delegate (SqlParameterCollection paramCollection)
+            {
+
+                paramCollection.AddWithValue("@Id", id);
+
+            }, delegate (IDataReader reader, short set) 
+            {
+                user = MapSingleUser(reader);
+
+            }
+            );
+
+            return user;
+
+        }
+
+        public List<User> GetAll()
+        {
+            List<User> list = null;
+
+            string procName = "[dbo].[Users_SelectAll]";
+
+            _data.ExecuteCmd(procName, inputParamMapper: null,
+                singleRecordMapper: delegate (IDataReader reader, short set)
+                {
+                    User AUser = MapSingleUser(reader);
+
+                    if (list == null)
+                    {
+                        list = new List<User>();
+                    }
+
+                    list.Add(AUser);
+                });
+            return list;
+        }
+
+        public void Update(UserUpdateRequest updateRequest)
+        {
+            string procName = "[dbo].[Users_Update]";
+            _data.ExecuteNonQuery(procName,
+                inputParamMapper: delegate (SqlParameterCollection col)
+                {
+                    col.AddWithValue("@Id", updateRequest.Id);
+                    col.AddWithValue("@FirstName", updateRequest.FirstName);
+                    col.AddWithValue("@LastName", updateRequest.LastName);
+                    col.AddWithValue("@Email", updateRequest.Email);
+                    col.AddWithValue("@AvatarUrl", updateRequest.AvatarUrl);
+                    col.AddWithValue("@TenantId", updateRequest.TenantId);
+                    col.AddWithValue("@Password", updateRequest.Password);
+                    col.AddWithValue("@PasswordConfirm", updateRequest.PasswordConfirm);
+
+                    
+                },
+                returnParameters: null);
+
+
+        }
+
+
+        public void Delete(int id)
+        {
+            string procName5 = "[dbo].[Users_Delete]";
+            _data.ExecuteNonQuery(procName5, inputParamMapper: delegate (SqlParameterCollection col)
+            {
+                col.AddWithValue("@Id", id);
+            }, returnParameters: null);
+        }
+
+        private static User MapSingleUser(IDataReader reader)
+        {
+            User AUser = new User();
+
+            int startingIndex = 0;
+
+            AUser.Id = reader.GetSafeInt32(startingIndex++);
+            AUser.FirstName = reader.GetString(startingIndex++);
+            AUser.LastName = reader.GetString(startingIndex++);
+            AUser.Email = reader.GetString(startingIndex++);
+            
+            AUser.AvatarUrl = reader.GetString(startingIndex++);
+            AUser.TenantId = reader.GetString(startingIndex++);
+
+            return AUser;
+        }
+
+        private static void AddCommonParams(UserAddRequest request, SqlParameterCollection col)
+        {
+            col.AddWithValue("@FirstName", request.FirstName);
+            col.AddWithValue("@LastName", request.LastName);
+            col.AddWithValue("@Email", request.Email);
+            col.AddWithValue("@Password", request.Password);
+            col.AddWithValue("@AvatarUrl", request.AvatarUrl);
+            col.AddWithValue("@TenantId", request.TenantId);
+        }
+    }
+}
+
+    
