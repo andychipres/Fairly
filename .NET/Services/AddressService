@@ -1,0 +1,161 @@
+using Sabio.Data.Providers;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Sabio.Data;
+using Sabio.Models.Domain.Addresses;
+using Sabio.Models.Requests.Addresses;
+using Sabio.Services.Interfaces;
+using Sabio.Models;
+
+namespace Sabio.Services
+{
+    public class AddressService : IAddressService
+    {
+
+        IDataProvider _data = null;
+        public AddressService(IDataProvider data)
+        {
+            _data = data;
+        }
+
+        public void Update(AddressUpdateRequest updateRequest)
+        {
+            string procName = "[dbo].[Sabio_Addresses_Update]";
+            _data.ExecuteNonQuery(procName,
+                inputParamMapper: delegate (SqlParameterCollection col)
+                {
+                    col.AddWithValue("@LineOne", updateRequest.LineOne);
+                    col.AddWithValue("@SuiteNumber", updateRequest.SuiteNumber);
+                    col.AddWithValue("@City", updateRequest.City);
+                    col.AddWithValue("@State", updateRequest.State);
+                    col.AddWithValue("@PostalCode", updateRequest.PostalCode);
+                    col.AddWithValue("@IsActive", updateRequest.IsActive);
+                    col.AddWithValue("@Lat", updateRequest.Lat);
+                    col.AddWithValue("@Long", updateRequest.Long);
+
+                    col.AddWithValue("@Id", updateRequest.Id);
+                },
+                returnParameters: null);
+        }
+
+        public int Add(AddressAddRequest request, int userId)
+        {
+            int id = 0;
+
+            string procName = "[dbo].[Sabio_Addresses_Insert]";
+            _data.ExecuteNonQuery(procName,
+                inputParamMapper: delegate (SqlParameterCollection col)
+                {
+                    AddCommonParams(request, col);
+
+                    SqlParameter idOut = new SqlParameter("@Id", SqlDbType.Int);
+                    idOut.Direction = ParameterDirection.Output;
+
+                    col.Add(idOut);
+
+                },
+                returnParameters: delegate (SqlParameterCollection returnCollection)
+            {
+                object oId = returnCollection["@Id"].Value;
+
+                int.TryParse(oId.ToString(), out id);
+
+                Console.WriteLine("");
+            });
+
+            return id;
+        }
+
+        public void Delete(int id)
+        {
+            string procName5 = "[dbo].[Sabio_Addresses_DeleteById]";
+            _data.ExecuteNonQuery(procName5, inputParamMapper: delegate (SqlParameterCollection col)
+            {
+                col.AddWithValue("@Id", id);
+            }, returnParameters: null);
+        }
+
+
+        public Address Get(int id)
+        {
+            Address address = null;
+
+            string procName = "[dbo].[Sabio_Addresses_SelectById]";
+
+
+            _data.ExecuteCmd(procName, delegate (SqlParameterCollection paramCollection)
+            {
+
+                paramCollection.AddWithValue("@Id", id);
+
+            }, delegate (IDataReader reader, short set)  //single record mapper
+            {
+                address = MapSingleAddress(reader);
+
+            }
+            );
+
+            return address;
+
+        }
+
+
+        public List<Address> GetRandomAddresses()
+        {
+            List<Address> list = null;
+
+            string procName = "[dbo].[Sabio_Addresses_SelectRandom50]";
+
+            _data.ExecuteCmd(procName, inputParamMapper: null,
+                singleRecordMapper: delegate (IDataReader reader, short set)
+                {
+                    Address AnAddress = MapSingleAddress(reader);
+
+                    if (list == null)
+                    {
+                        list = new List<Address>();
+                    }
+
+                    list.Add(AnAddress);
+                });
+            return list;
+        }
+
+     
+
+        private static Address MapSingleAddress(IDataReader reader)
+        {
+            Address AnAddress = new Address();
+
+            int startingIndex = 0;
+
+            AnAddress.Id = reader.GetSafeInt32(startingIndex++);
+            AnAddress.LineOne = reader.GetSafeString(startingIndex++);
+            AnAddress.SuiteNumber = reader.GetSafeInt32(startingIndex++);
+            AnAddress.City = reader.GetSafeString(startingIndex++);
+            AnAddress.State = reader.GetSafeString(startingIndex++);
+            AnAddress.PostalCode = reader.GetSafeString(startingIndex++);
+            AnAddress.IsActive = reader.GetSafeBool(startingIndex++);
+            AnAddress.Lat = reader.GetSafeDouble(startingIndex++);
+            AnAddress.Long = reader.GetSafeDouble(startingIndex++);
+            return AnAddress;
+        }
+
+        private static void AddCommonParams(AddressAddRequest request, SqlParameterCollection col)
+        {
+            col.AddWithValue("@LineOne", request.LineOne);
+            col.AddWithValue("@SuiteNumber", request.SuiteNumber);
+            col.AddWithValue("@City", request.City);
+            col.AddWithValue("@State", request.State);
+            col.AddWithValue("@PostalCode", request.PostalCode);
+            col.AddWithValue("@IsActive", request.IsActive);
+            col.AddWithValue("@Lat", request.Lat);
+            col.AddWithValue("@Long", request.Long);
+        }
+    }
+}
