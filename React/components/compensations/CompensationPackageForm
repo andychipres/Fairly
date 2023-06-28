@@ -1,0 +1,184 @@
+import React, { useEffect, useState } from "react";
+import { Formik, Field, ErrorMessage, Form } from "formik";
+import { Button, Card, Col, Form as BootstrapForm, Row } from "react-bootstrap";
+import compensationPackageFormSchema from "../../schemas/compensationPackageSchema";
+import compensationPackageService from "../../services/compensationPackageService";
+import organizationService from "../../services/organizationService";
+import "../compensations/compensationpackages.css";
+import PropTypes from "prop-types";
+import toastr from "toastr";
+
+import debug from "sabio-debug";
+const _logger = debug.extend("Comp");
+
+function CompensationPackageForm(props) {
+  const [dataArrays, setDataArrays] = useState({
+    organizationId: 0,
+    organization: "",
+    name: "",
+    description: "",
+    
+  });
+
+  const userId = props.currentUser.id;
+
+  useEffect(() => {
+  
+    _logger("Test", props)
+
+    organizationService
+      .getUsersOrgMembership(userId)
+      .then(onGetOrganizationsSuccess)
+      .catch(onGetOrganizationsError);
+  }, []);
+
+
+
+  const onGetOrganizationsSuccess = (response) => {
+    setDataArrays((prevState) => {
+      let newObj = { ...prevState };
+      newObj.organizationId = response.item.id;
+      newObj.organization = response.item.name;
+      return newObj;
+
+ 
+    });
+  };
+
+  const onGetOrganizationsError = (error) => {
+    _logger(error);
+    toastr.error("Something went wrong. Please try again.");
+  };
+
+  const handleSubmit = (values) => {
+    _logger("form data submitted", values);
+
+    const payload = {
+      orgId: Number.parseInt(values.organizationId),
+      name: values.name,
+      description: values.description,
+    };
+
+    compensationPackageService
+      .addCompensationPackage(payload)
+      .then(onAddCompensationPackageSuccess)
+      .catch(onAddCompensationPackageFail);
+  };
+
+
+  const onAddCompensationPackageSuccess = (response) => {
+    _logger("Successfully added a compensation package", response);
+    toastr.success("You have added a new compensation package!");
+  };
+
+  const onAddCompensationPackageFail = (error) => {
+    _logger("Unable to add a compensation package", error);
+    toastr.error("Something went wrong. Please try again.");
+  };
+
+  return (
+    <Card className="col-9">
+      <Card.Header className="text-center">
+        <Card.Title className="bold">Create a Compensation Package</Card.Title>
+        <h6 className="card-subtitle text-muted">
+          Use this form to add a new compensation package for a future employee.
+        </h6>
+      </Card.Header>
+      <Card.Body>
+        <Formik
+          enableReinitialize={true}
+          initialValues={dataArrays}
+          onSubmit={handleSubmit}
+          validationSchema={compensationPackageFormSchema}
+        >
+          <Form>
+            <BootstrapForm.Group as={Row} className="mb-3">
+              <BootstrapForm.Label
+                column
+                sm={2}
+                className="text-sm-right text-end"
+              >
+                Organization
+              </BootstrapForm.Label>
+              <Col sm={10}>
+                <Field
+                  as="select"
+                  name="organization"
+                  className=" m-1 p-1 form-select-sm"
+                >
+                  <option
+                    name={dataArrays.organization}
+                    value={dataArrays.organizationId}
+                  >
+                    {dataArrays.organization}
+                  </option>
+                </Field>
+              </Col>
+            </BootstrapForm.Group>
+            <BootstrapForm.Group as={Row} className="mb-3">
+              <BootstrapForm.Label
+                column
+                sm={2}
+                className="text-sm-right text-end"
+              >
+                Compensation Package Name
+              </BootstrapForm.Label>
+              <Col sm={10}>
+                <Field
+                  type="text"
+                  name="name"
+                  id="name"
+                  className="form-control"
+                  placeholder="Name"
+                />
+                <ErrorMessage
+                  component="div"
+                  name="name"
+                  className="compensations-has-error"
+                />
+              </Col>
+            </BootstrapForm.Group>
+      
+            <BootstrapForm.Group as={Row} className="mb-3">
+              <BootstrapForm.Label
+                column
+                sm={2}
+                className="text-sm-right text-end"
+              >
+                Description
+              </BootstrapForm.Label>
+              <Col sm={10}>
+                <Field
+                  component="textarea"
+                  name="description"
+                  id="description"
+                  className="form-control"
+                  placeholder="Description"
+                />
+                <ErrorMessage
+                  component="div"
+                  name="description"
+                  className="compensations-has-error"
+                />
+              </Col>
+            </BootstrapForm.Group>
+
+            <Col sm={{ size: 10, offset: 2 }}>
+              <Button type="submit" className="btn-success" variant="primary">
+                Submit
+              </Button>
+            </Col>
+          </Form>
+        </Formik>
+      </Card.Body>
+    </Card>
+  );
+}
+
+CompensationPackageForm.propTypes = {
+  currentUser: PropTypes.shape({
+    id: PropTypes.number.isRequired,
+  }),
+};
+
+export default CompensationPackageForm;
