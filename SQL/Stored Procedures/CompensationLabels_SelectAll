@@ -1,0 +1,42 @@
+USE [Fairly]
+GO
+/****** Object:  StoredProcedure [dbo].[CompensationLabels_SelectAll]    Script Date: 6/27/2023 9:44:01 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+
+-- =============================================
+-- Author: <ANDY CHIPRES>
+-- Create date: <04/10/2023>
+-- Description: <Select all compensation labels>
+-- Code Reviewer: BRIAN B.
+
+-- MODIFIED BY: author
+-- MODIFIED DATE:
+-- Note:
+-- =============================================
+
+ALTER proc [dbo].[CompensationLabels_SelectAll]
+
+	
+as
+
+/* ----- Test Code -----
+	
+	Execute [dbo].[CompensationLabels_SelectAll]
+	
+
+*/
+
+BEGIN
+
+Select 
+[Id],
+[Name],
+[Description] 
+	 
+From [dbo].[CompensationLabels]
+
+END
