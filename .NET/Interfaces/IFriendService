@@ -1,0 +1,21 @@
+using Sabio.Models;
+using Sabio.Models.Domain.Friends;
+using Sabio.Models.Requests.Friends;
+using System.Collections.Generic;
+
+namespace Sabio.Services.Interfaces
+{
+    public interface IFriendService
+    {
+        int Add(FriendAddRequest request, int UserId);
+        void Delete(int id);
+        Friend Get(int id);
+        List<Friend> GetAll();
+        void Update(FriendUpdateRequest updateRequest, int UserId);
+        public Paged<Friend> Pagination(int pageIndex, int pageSize);
+        public List<FriendV3> GetAllV3();
+        public FriendV3 GetV3(int id);
+        public Paged<FriendV3> PaginationV3(int pageIndex, int pageSize);
+        public Paged<FriendV3> SearchPaginationV3(int pageIndex, int pageSize, string query);
+    }
+} 
