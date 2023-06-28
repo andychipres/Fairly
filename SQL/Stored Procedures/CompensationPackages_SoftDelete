@@ -1,0 +1,36 @@
+USE [Fairly]
+GO
+/****** Object:  StoredProcedure [dbo].[CompensationPackages_SoftDelete]    Script Date: 6/27/2023 9:51:22 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- =============================================
+-- Author: <ANDY CHIPRES>
+-- Create date: <04/10/2023>
+-- Description: <Delete a compensation element>
+
+-- MODIFIED BY: author
+-- MODIFIED DATE:
+-- Code Reviewer: BRIAN B.
+-- Note:
+-- =============================================
+
+ALTER PROCEDURE [dbo].[CompensationPackages_SoftDelete]
+    @Id INT
+AS
+/*
+
+EXECUTE [dbo].[CompensationPackages_Delete] @Id = 85
+
+Select *
+From dbo.CompensationPackages
+
+*/
+
+
+BEGIN
+    UPDATE [dbo].[CompensationPackages]
+    SET IsDeleted = 1
+    WHERE [Id] = @Id
+END
