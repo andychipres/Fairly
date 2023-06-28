@@ -1,0 +1,82 @@
+import { lazy } from "react";
+
+const PageNotFound = lazy(() => import("../components/errors/Error404"))
+const PersonalValueRank = lazy(() =>import("../components/personalvaluerank/PersonalValueRanking"));
+const Jobs = lazy(() => import("../components/jobs/Jobs"));
+const JobsPage = lazy(() => import("../components/jobs/JobsPage"));
+const NewJobPosting = lazy(() => import("../components/jobs/NewJobPosting"));
+const CompensationPackageForm = lazy(() => import("../components/compensations/CompensationPackageForm"));
+const CompensationsDashboard = lazy(() => import("../components/compensations/CompensationsDashboard"));
+const AnalyticsDashboard = lazy(() => import("../components/siteanalytics/AnalyticsDashboard"));
+const UserAdmin = lazy(() => import("../components/users/UserAdmin"));
+const OrganizationsForm = lazy(() => import("../components/organizations/OrganizationsForm")
+
+const chatRoutes = [
+  {
+    path: "/dashboard/chat",
+    name: "chat",
+    exact: true,
+    element: Chat,
+    roles: ["Employee", "Candidate", "SysAdmin", "User", "HiringAdmin"],
+    isAnonymous: true,
+  },
+];
+
+const compensationPackageRoutes = [
+  {
+    path: "dashboard/compensations/packages/add",
+    name: "Compensation Package",
+    header: "Navigation",
+    element: CompensationPackageForm,
+    roles: ["HiringAdmin", "OrgAdmin"],
+    exact: true,
+    isAnonymous: false,
+  },
+  {
+    path: "dashboard/compensations/packages/dashboard",
+    name: "Compensation Package Dashboard",
+    header: "Navigation",
+    element: CompensationsDashboard,
+    roles: ["HiringAdmin", "OrgAdmin"],
+    exact: true,
+    isAnonymous: false,
+  },
+ 
+];
+
+const organizationRoutes = [
+  {
+    path: "/dashboard/admin/organizations",
+    name: "Organizations List",
+    element: OrganizationsList,
+    roles: ["SysAdmin"],
+    exact: true,
+    inAnonymous: false,
+  },
+  {
+    path: "/dashboard/admin/organizations/view",
+    name: "Organizations View",
+    element: OrganizationsView,
+    roles: ["SysAdmin"],
+    exact: true,
+    inAnonymous: false,
+  },
+
+  {
+    path: "/dashboard/admin/organizations/add",
+    name: "Add Form",
+    element: OrganizationsForm,
+    roles: ["SysAdmin", "OrgAdmin", "HiringAdmin", "Employee", "Candidate"],
+    exact: true,
+    isAnonymous: true,
+  },
+];
+
+const allRoutes = [
+  ...dashboardRoutes,
+  ...organizationRoutes,
+  ...compensationPackageRoutes,
+  ...userRoutes,
+];
+
+export default allRoutes;
