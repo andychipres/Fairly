@@ -1,0 +1,76 @@
+USE [Fairly]
+GO
+/****** Object:  StoredProcedure [dbo].[CompensationPackages_Insert]    Script Date: 6/27/2023 9:48:40 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+
+-- =============================================
+-- Author: <ANDY CHIPRES>
+-- Create date: <04/10/2023>
+-- Description: <Insert new compensation package>
+
+-- MODIFIED BY: author
+-- MODIFIED DATE:
+-- Code Reviewer: BRIAN B.
+-- Note:
+-- =============================================
+
+ALTER proc [dbo].[CompensationPackages_Insert]
+	@OrgId  int,
+	@Name nvarchar(100),
+	@Description nvarchar(500),
+	@CreatedBy int,
+	@ModifiedBy int,
+	@Id int OUTPUT
+as
+
+/* ----- Test Code -----
+	
+	Declare @Id int = 0,
+
+	@OrgId int = 1,
+	@Name nvarchar(100) = 'Senior Developer Package',
+	@Description nvarchar(500) = '401k, $3,000 Sign-On Bonus',
+	@BaseSalary nvarchar(100) = '$110k'
+	@CreatedBy int = 3,
+	@ModifiedBy int = 7
+	
+	Execute [dbo].[CompensationPackages_Insert] 
+
+	@OrgId,
+	@Name,
+	@Description,
+	@CreatedBy,
+	@ModifiedBy,
+	@Id OUTPUT
+	
+
+	Select * 
+	from dbo.CompensationPackages
+	Where Id = @Id	
+
+*/
+
+BEGIN
+
+	Insert into [dbo].[CompensationPackages]
+	([OrgId],
+	 [Name],
+	 [Description],
+	 [CreatedBy],
+	 [ModifiedBy]) 
+	 
+	 VALUES
+
+   (@OrgId,
+	@Name,
+	@Description,
+	@CreatedBy,
+	@ModifiedBy)
+	
+	SET @Id = SCOPE_IDENTITY()
+
+END
