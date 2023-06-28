@@ -1,0 +1,339 @@
+using Data.Providers;
+using Models.Domain.Concerts;
+using System;
+using System.Collections.Generic;
+using System.Data.SqlClient;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Models.Domain.Friends;
+using Data;
+using Models.Requests.Friends;
+using System.Runtime.Serialization;
+using Models.Requests.Concerts;
+using Services.Interfaces;
+using Models;
+using Models.Domain.Skills;
+using Newtonsoft.Json;
+using System.IO.Pipes;
+using Models.Domain.Images;
+
+namespace Services
+{
+    public class FriendService : IFriendService
+    {
+        IDataProvider _data = null;
+        public FriendService(IDataProvider data)
+        {
+            _data = data;
+        }
+
+        public Friend Get(int id)
+        {
+            Friend friend = null;
+
+            string procName = "[dbo].[Friends_SelectById]";
+
+
+            _data.ExecuteCmd(procName, delegate (SqlParameterCollection paramCollection)
+            {
+
+                paramCollection.AddWithValue("@Id", id);
+
+            }, delegate (IDataReader reader, short set)  //single record mapper
+            {
+                friend = MapSingleFriend(reader);
+
+            }
+            );
+
+            return friend;
+        }
+
+        public List<Friend> GetAll()
+        {
+            List<Friend> list = null;
+
+            string procName = "[dbo].[Friends_SelectAll]";
+
+            _data.ExecuteCmd(procName, inputParamMapper: null,
+                singleRecordMapper: delegate (IDataReader reader, short set)
+                {
+                    Friend aFriend = MapSingleFriend(reader);
+
+                    if (list == null)
+                    {
+                        list = new List<Friend>();
+                    }
+
+                    list.Add(aFriend);
+                });
+            return list;
+        }
+
+        public int Add(FriendAddRequest request, int UserId)
+        {
+            int id = 0;
+
+            string procName = "[dbo].[Friends_Insert]";
+            _data.ExecuteNonQuery(procName,
+                inputParamMapper: delegate (SqlParameterCollection col)
+                {
+                    AddCommonParams(request, col);
+
+                    SqlParameter idOut = new SqlParameter("@Id", SqlDbType.Int);
+                    idOut.Direction = ParameterDirection.Output;
+
+                    col.Add(idOut);
+
+                    col.AddWithValue("@UserId", UserId);
+
+                },
+                returnParameters: delegate (SqlParameterCollection returnCollection)
+                {
+                    object oId = returnCollection["@Id"].Value;
+
+                    int.TryParse(oId.ToString(), out id);
+
+                    Console.WriteLine("");
+                });
+
+            return id;
+        }
+
+        public void Update(FriendUpdateRequest updateRequest, int UserId)
+        {
+           // string UserId = "@UserId";
+
+            string procName = "[dbo].[Friends_Update]";
+            _data.ExecuteNonQuery(procName,
+                inputParamMapper: delegate (SqlParameterCollection col)
+                {
+                    col.AddWithValue("@Title", updateRequest.Title);
+                    col.AddWithValue("@Bio", updateRequest.Bio);
+                    col.AddWithValue("@Summary", updateRequest.Summary);
+                    col.AddWithValue("@Headline", updateRequest.Headline);
+                    col.AddWithValue("@Slug", updateRequest.Slug);
+                    col.AddWithValue("@StatusId", updateRequest.StatusId);
+                    col.AddWithValue("@PrimaryImageUrl", updateRequest.PrimaryImageUrl);
+                    col.AddWithValue("@UserId", updateRequest.UserId);
+
+                    col.AddWithValue("@Id", updateRequest.Id);
+                },
+                returnParameters: null);
+        }
+
+        public void Delete(int id)
+        {
+            string procName5 = "[dbo].[Friends_Delete]";
+            _data.ExecuteNonQuery(procName5, inputParamMapper: delegate (SqlParameterCollection col)
+            {
+                col.AddWithValue("@Id", id);
+            }, returnParameters: null);
+        }
+
+        private static void AddCommonParams(FriendAddRequest request, SqlParameterCollection col)
+        {
+            col.AddWithValue("@Title", request.Title);
+            col.AddWithValue("@Bio", request.Bio);
+            col.AddWithValue("@Summary", request.Summary);
+            col.AddWithValue("@Headline", request.Headline);
+            col.AddWithValue("@Slug", request.Slug);
+            col.AddWithValue("@StatusId", request.StatusId);
+            col.AddWithValue("@PrimaryImageUrl", request.PrimaryImageUrl);
+            
+        }
+
+        public Paged<Friend> Pagination (int pageIndex, int pageSize)
+        {
+            Paged<Friend> pagedList = null;
+            List<Friend> list = null;
+            int totalCount = 0;
+
+            _data.ExecuteCmd(
+                "dbo.Friends_Pagination",
+                (param) =>
+                {
+                    param.AddWithValue("@PageIndex", pageIndex);
+                    param.AddWithValue("@PageSize", pageSize);
+                },
+                (reader, recordSetIndex) =>
+                {
+                    Friend friend = MapSingleFriend(reader);
+                    totalCount = reader.GetSafeInt32(6);
+
+                    if (list == null)
+                    {
+                        list = new List<Friend>();
+                    }
+
+                    list.Add(friend);
+                }
+                );
+            if (list != null)
+            {
+                pagedList = new Paged<Friend>(list, pageIndex, pageSize, totalCount);
+            }
+            return pagedList;
+        }
+
+        public List<FriendV3> GetAllV3()
+        {
+            List<FriendV3> myFriends = null;
+
+            _data.ExecuteCmd("[dbo].[Friends_SelectAllV3]",
+                inputParamMapper: null,
+                singleRecordMapper: delegate (IDataReader reader, short set)
+                {
+                    FriendV3 friend = MapSingleFriendV3 (reader);
+                    
+                    if (myFriends == null)
+                    {
+                        myFriends = new List<FriendV3>();
+                    }
+                    myFriends.Add(friend);
+                });
+
+            return myFriends;
+        }
+
+        public FriendV3 GetV3(int id)
+        {
+            FriendV3 friend = null;
+
+            string procName = "[dbo].[Friends_SelectByIdV3]";
+
+
+            _data.ExecuteCmd(procName, delegate (SqlParameterCollection paramCollection)
+            {
+
+                paramCollection.AddWithValue("@Id", id);
+
+            }, delegate (IDataReader reader, short set)  //single record mapper
+            {
+                friend = MapSingleFriendV3(reader);
+
+            }
+            );
+
+            return friend;
+        }
+
+        public Paged<FriendV3> PaginationV3(int pageIndex, int pageSize)
+        {
+            Paged<FriendV3> pagedList = null;
+            List<FriendV3> list = null;
+            int totalCount = 0;
+
+            _data.ExecuteCmd(
+                "[dbo].[Friends_PaginationV3]",
+                (param) =>
+                {
+                    param.AddWithValue("@PageIndex", pageIndex);
+                    param.AddWithValue("@PageSize", pageSize);
+                },
+                (reader, recordSetIndex) =>
+                {
+                    FriendV3 friend = MapSingleFriendV3(reader);
+                    totalCount = reader.GetSafeInt32(6);
+
+                    if (list == null)
+                    {
+                        list = new List<FriendV3>();
+                    }
+
+                    list.Add(friend);
+                }
+                );
+            if (list != null)
+            {
+                pagedList = new Paged<FriendV3>(list, pageIndex, pageSize, totalCount);
+            }
+            return pagedList;
+        }
+        
+        public Paged<FriendV3> SearchPaginationV3(int pageIndex, int pageSize, string query)
+        {
+            Paged<FriendV3> pagedList = null;
+            List<FriendV3> list = null;
+            int totalCount = 0;
+
+            _data.ExecuteCmd(
+                "[dbo].[Friends_Search_PaginationV3]",
+                (param) =>
+                {
+                    param.AddWithValue("@PageIndex", pageIndex);
+                    param.AddWithValue("@PageSize", pageSize);
+                    param.AddWithValue("@Query", query);
+                },
+                (reader, recordSetIndex) =>
+                {
+                    FriendV3 friend = MapSingleFriendV3(reader);
+                    totalCount = reader.GetSafeInt32(6);
+
+                    if (list == null)
+                    {
+                        list = new List<FriendV3>();
+                    }
+
+                    list.Add(friend);
+                }
+                );
+            if (list != null)
+            {
+                pagedList = new Paged<FriendV3>(list, pageIndex, pageSize, totalCount);
+            }
+            return pagedList;
+        }
+
+        private static FriendV3 MapSingleFriendV3 (IDataReader reader)
+        {
+            FriendV3 friend = new FriendV3();
+
+            int startingIndex = 0;
+
+            friend.Id = reader.GetSafeInt32(startingIndex++);
+            friend.Title = reader.GetSafeString(startingIndex++);
+            friend.Bio = reader.GetSafeString (startingIndex++);
+            friend.Summary= reader.GetSafeString(startingIndex++);
+            friend.Headline = reader.GetSafeString(startingIndex++);
+            friend.Slug = reader.GetSafeString(startingIndex++);
+            friend.StatusId= reader.GetSafeInt32(startingIndex++);
+            
+            int primaryImageId = reader.GetSafeInt32(startingIndex++);
+            int imageTypeId = reader.GetSafeInt32(startingIndex++);
+            string imageUrl = reader.GetSafeString(startingIndex++);
+
+            friend.PrimaryImage = new Image
+            {
+                Id = primaryImageId,
+                TypeId = imageTypeId,
+                Url = imageUrl
+            };
+
+            friend.Skills = reader.DeserializeObject<List<Skill>>(startingIndex++);
+
+            return friend;
+        }
+
+        private static Friend MapSingleFriend(IDataReader reader)
+        {
+            Friend aFriend = new Friend();
+
+            int startingIndex = 0;
+
+            aFriend.Id = reader.GetSafeInt32(startingIndex++);
+            aFriend.Title = reader.GetSafeString(startingIndex++);
+            aFriend.Bio = reader.GetSafeString(startingIndex++);
+            aFriend.Summary = reader.GetSafeString(startingIndex++);
+            aFriend.Headline = reader.GetSafeString(startingIndex++);
+            aFriend.Slug = reader.GetSafeString(startingIndex++);
+            aFriend.StatusId = reader.GetSafeInt32(startingIndex++);  
+            aFriend.PrimaryImageUrl = reader.GetSafeString(startingIndex++);
+            aFriend.UserId = reader.GetSafeInt32(startingIndex++);
+
+            return aFriend;
+        }
+    }
+}
