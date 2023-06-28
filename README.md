@@ -13,7 +13,7 @@ My role as a software engineer on this project was to handle the compensation pa
 
 •Tested API functionality using Postman to ensure endpoints were working properly to avoid potential bugs or errors before deployment.
 
-•Communicated current progress of tasks in <strong>Agile/Scrum</strong> environment with team members through daily stand-up meetings and code reviews.
+•Communicated current progress of tasks in <strong>AGILE/SCRUM</strong> environment with team members through daily stand-up meetings and code reviews.
 
 •Operated with a highly functional system of source control and workflow management through Git, GitHub, Slack, and Trello.
 
