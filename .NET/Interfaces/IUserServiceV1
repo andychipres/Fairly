@@ -1,0 +1,15 @@
+using Models.Domain.Users;
+using Models.Requests.Users;
+using System.Collections.Generic;
+
+namespace Services.Interfaces
+{
+    public interface IUserServiceV1
+    {
+        int Add(UserAddRequest request, int currentUserId);
+        void Delete(int id);
+        User Get(int id);
+        List<User> GetAll();
+        void Update(UserUpdateRequest updateRequest);
+    }
+}
